@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   portainer:
     image: portainer/portainer-ce:2.9.2
@@ -40,21 +38,6 @@ services:
       - traefik.port=8080
       - traefik.docker.network=proxy
     restart: always
-
-  #loris:
-  #  image: bdlss/loris-openjpeg-docker:latest
-  #  container_name: iiif-loris
-  #  restart: unless-stopped
-  #  environment:
-  #    - HOST
-  #    - IMAGE_LOCATION=/usr/local/share/images
-  #  networks:
-  #    - proxy
-  #  volumes:
-  #    - ${IMAGE_LOCATION}:/usr/local/share/images
-  #  labels:
-  #    - traefik.frontend.rule=Host:iiif.${HOST}
-  #    - traefik.port=5004
 
 volumes:
   portainer_data:

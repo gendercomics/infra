@@ -1,4 +1,4 @@
-# copy docker-compose.yml to digitalocean and run docker-compose
+# copy scripts to digitalocean and run docker-compose
 
 name: docker-compose
 
@@ -13,25 +13,25 @@ jobs:
       - name: check out the repo
         uses: actions/checkout@v2
 
-      - name: copy & run stage
+      - name: copy files
         uses: alinz/ssh-scp-action@master
         with:
           key: ${{ secrets.DEPLOY_KEY }}
           host: ${{ secrets.APP_HOST }}
           user: ${{ secrets.DEPLOY_USER }}
-          # runs this on remove server
           ssh_before: |
             echo 'PRODUCTION: deploying ${{ github.ref }}'
-            cd /var/gendercomics/docker
-            ls -lath
+            mkdir -p /var/gendercomics/docker
 
-          # then upload docker-compose.yml
           scp: |
-            ./docker-compose.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.APP_HOST }}:/var/gendercomics/docker
+            ./docker-compose.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.APP_HOST }}:/var/gendercomics/docker/docker-compose.yml
+            ./setup.sh ${{ secrets.DEPLOY_USER }}@${{ secrets.APP_HOST }}:/var/gendercomics/docker/setup.sh
+            ./cleanup.sh ${{ secrets.DEPLOY_USER }}@${{ secrets.APP_HOST }}:/var/gendercomics/docker/cleanup.sh
 
-          # then run these commands
           ssh_after: |
-            echo 'running docker-compose'
+            chmod +x /var/gendercomics/docker/setup.sh /var/gendercomics/docker/cleanup.sh
+            docker network create proxy    2>/dev/null || true
+            docker network create database 2>/dev/null || true
             cd /var/gendercomics/docker
-            docker-compose up -d
+            docker compose up -d
             echo 'DONE!!!'
