@@ -12,18 +12,24 @@ services:
     ports:
       - 9000:9000
     labels:
-      - traefik.frontend.rule=Host:portainer.${HOST}
-      - traefik.port=9000
-      - traefik.docker.network=proxy
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.${HOST}`)"
+      - "traefik.http.routers.portainer.entrypoints=web"
+      - "traefik.http.routers.portainer-secure.rule=Host(`portainer.${HOST}`)"
+      - "traefik.http.routers.portainer-secure.entrypoints=websecure"
+      - "traefik.http.routers.portainer-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      - "traefik.docker.network=proxy"
     networks:
       - proxy
 
   traefik:
-    image: library/traefik:v1.7.33
+    image: traefik:v3.7.1
     container_name: traefik
     environment:
       - HOST
-    command: --docker --docker.domain=docker.${HOST} --logLevel=INFO
+    command:
+      - "--configFile=/traefik.toml"
     ports:
       - 80:80
       - 443:443
@@ -34,9 +40,17 @@ services:
       - ./traefik_${HOST}.toml:/traefik.toml
       - ./acme.json:/acme.json
     labels:
-      - traefik.frontend.rule=Host:traefik.${HOST}
-      - traefik.port=8080
-      - traefik.docker.network=proxy
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${HOST}`)"
+      - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.${HOST}`)"
+      - "traefik.http.routers.traefik-secure.entrypoints=websecure"
+      - "traefik.http.routers.traefik-secure.service=api@internal"
+      - "traefik.http.routers.traefik-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$apr1$$7i8yEufb$$LlISk/PPdwyHfBgUuHaST1"
+      - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
+      - "traefik.docker.network=proxy"
     restart: always
 
 volumes:

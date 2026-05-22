@@ -1,21 +1,15 @@
-defaultEntryPoints = ["http"]
+[api]
+  dashboard = true
+
+[log]
+  level = "INFO"
 
 [entryPoints]
-
-  [entryPoints.dashboard]
-    address = ":8080"
-
-  [entryPoints.http]
+  [entryPoints.web]
     address = ":80"
-    [entryPoints.http.redirect]
-        regex = "^http://www.(.*)"
-        replacement = "http://$1"
-        permanent = true
 
-[api]
-entrypoint="dashboard"
-
-[docker]
-domain = "docker.localhost"
-watch = true
-network = "proxy"
+[providers]
+  [providers.docker]
+    network = "proxy"
+    watch = true
+    exposedByDefault = false

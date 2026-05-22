@@ -1,35 +1,28 @@
-defaultEntryPoints = ["http", "https"]
+[api]
+  dashboard = true
+
+[log]
+  level = "INFO"
 
 [entryPoints]
-  [entryPoints.dashboard]
-    address = ":8080"
-    [entryPoints.dashboard.auth]
-      [entryPoints.dashboard.auth.basic]
-        users = ["admin:$apr1$7i8yEufb$LlISk/PPdwyHfBgUuHaST1"]
-  [entryPoints.http]
+  [entryPoints.web]
     address = ":80"
-      [entryPoints.http.redirect]
-        entryPoint = "https"
-  [entryPoints.https]
+    [entryPoints.web.http.redirections.entryPoint]
+      to = "websecure"
+      scheme = "https"
+      permanent = true
+  [entryPoints.websecure]
     address = ":443"
-      [entryPoints.https.redirect]
-        regex = "^https://www.(.*)"
-        replacement = "https://$1"
-        permanent = true
-      [entryPoints.https.tls]
 
-[api]
-entrypoint="dashboard"
+[providers]
+  [providers.docker]
+    network = "proxy"
+    watch = true
+    exposedByDefault = false
 
-[acme]
-email = "michael.litschauer@gmail.com"
-storage = "acme.json"
-entryPoint = "https"
-onHostRule = true
-  [acme.httpChallenge]
-  entryPoint = "http"
-
-[docker]
-domain = "docker.gendercomics.net"
-watch = true
-network = "proxy"
+[certificatesResolvers]
+  [certificatesResolvers.letsencrypt.acme]
+    email = "michael.litschauer@gmail.com"
+    storage = "acme.json"
+    [certificatesResolvers.letsencrypt.acme.httpChallenge]
+      entryPoint = "web"
