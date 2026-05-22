@@ -21,17 +21,16 @@ jobs:
           user: ${{ secrets.DEPLOY_USER }}
           ssh_before: |
             echo 'PRODUCTION: deploying ${{ github.ref }}'
-            mkdir -p /var/gendercomics/docker
+            mkdir -p /var/gendercomics/infra
 
           scp: |
-            ./docker-compose.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.APP_HOST }}:/var/gendercomics/docker/docker-compose.yml
-            ./setup.sh ${{ secrets.DEPLOY_USER }}@${{ secrets.APP_HOST }}:/var/gendercomics/docker/setup.sh
-            ./cleanup.sh ${{ secrets.DEPLOY_USER }}@${{ secrets.APP_HOST }}:/var/gendercomics/docker/cleanup.sh
+            ./docker-compose.yml ${{ secrets.DEPLOY_USER }}@${{ secrets.APP_HOST }}:/var/gendercomics/infra/docker-compose.yml
+            ./setup.sh ${{ secrets.DEPLOY_USER }}@${{ secrets.APP_HOST }}:/var/gendercomics/infra/setup.sh
+            ./cleanup.sh ${{ secrets.DEPLOY_USER }}@${{ secrets.APP_HOST }}:/var/gendercomics/infra/cleanup.sh
 
           ssh_after: |
-            chmod +x /var/gendercomics/docker/setup.sh /var/gendercomics/docker/cleanup.sh
-            docker network create proxy    2>/dev/null || true
+            chmod +x /var/gendercomics/infra/setup.sh /var/gendercomics/infra/cleanup.sh
             docker network create database 2>/dev/null || true
-            cd /var/gendercomics/docker
+            cd /var/gendercomics/infra
             docker compose up -d
             echo 'DONE!!!'
